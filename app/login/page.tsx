@@ -1,34 +1,52 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
 import { useLogin } from "@/lib/queries";
 import { useAuthStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+type LoginFormValues = {
+  username: string;
+  password: string;
+};
 
 export default function LoginPage() {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const loginMutation = useLogin();
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    defaultValues: { username: "", password: "" },
+  });
+
   useEffect(() => {
     if (token) router.replace("/dashboard");
   }, [token, router]);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const username = (form.elements.namedItem("username") as HTMLInputElement)?.value?.trim();
-    const password = (form.elements.namedItem("password") as HTMLInputElement)?.value;
-    if (!username || !password) return;
+  function onSubmit({ username, password }: LoginFormValues) {
+    const trimmed = username.trim();
+    if (!trimmed || !password) return;
     loginMutation.mutate(
-      { username, password },
+      { username: trimmed, password },
       {
         onSuccess: () => router.replace("/dashboard"),
-      }
+      },
     );
   }
 
@@ -36,20 +54,26 @@ export default function LoginPage() {
 
   return (
     <main
-      className="min-h-screen flex items-center justify-center p-4 bg-muted/30"
+      className="min-h-screen flex flex-col items-center justify-center p-4 bg-muted/30"
       role="main"
       aria-label="Login"
     >
+      <Image
+        src="/assets/logo-text.png"
+        alt="Cureocity"
+        width={140}
+        height={32}
+        className="mb-6 h-8 w-auto object-contain"
+        unoptimized
+      />
       <Card className="w-full max-w-md">
-        <CardHeader>
+        <CardHeader className="items-center text-center">
           <CardTitle id="login-title">Sign in</CardTitle>
-          <CardDescription id="login-desc">
-            Use any user from DummyJSON (e.g. emilys / emilyspass).
-          </CardDescription>
+          <CardDescription id="login-desc"></CardDescription>
         </CardHeader>
         <CardContent>
           <form
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             className="grid gap-4"
             noValidate
             aria-labelledby="login-title"
@@ -59,30 +83,61 @@ export default function LoginPage() {
               <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
-                name="username"
                 type="text"
                 autoComplete="username"
                 placeholder="emilys"
                 disabled={loginMutation.isPending}
                 aria-required="true"
-                aria-invalid={loginMutation.isError ? "true" : undefined}
-                aria-describedby={loginMutation.isError ? "login-error" : undefined}
+                aria-invalid={
+                  errors.username || loginMutation.isError ? "true" : undefined
+                }
+                aria-describedby={
+                  errors.username
+                    ? "username-error"
+                    : loginMutation.isError
+                      ? "login-error"
+                      : undefined
+                }
                 className="focus-visible:ring-2"
+                {...register("username", { required: "Username is required" })}
               />
+              {errors.username && (
+                <p
+                  id="username-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {errors.username.message}
+                </p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
-                name="password"
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••"
                 disabled={loginMutation.isPending}
                 aria-required="true"
-                aria-invalid={loginMutation.isError ? "true" : undefined}
+                aria-invalid={
+                  errors.password || loginMutation.isError ? "true" : undefined
+                }
+                aria-describedby={
+                  errors.password ? "password-error" : undefined
+                }
                 className="focus-visible:ring-2"
+                {...register("password", { required: "Password is required" })}
               />
+              {errors.password && (
+                <p
+                  id="password-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {errors.password.message}
+                </p>
+              )}
             </div>
             {loginMutation.isError && (
               <p
