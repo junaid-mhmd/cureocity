@@ -100,7 +100,9 @@ export default function Header() {
       <div
         id="mobile-menu"
         className={`fixed inset-0 z-40 flex h-screen w-screen flex-col items-center justify-center gap-6 bg-black/95 backdrop-blur-xl transition-all duration-300 md:hidden ${
-          mobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          mobileMenuOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
         aria-hidden={!mobileMenuOpen}
       >
