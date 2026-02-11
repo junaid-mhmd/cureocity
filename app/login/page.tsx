@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type LoginFormValues = {
   username: string;
@@ -72,6 +73,19 @@ export default function LoginPage() {
           <CardDescription id="login-desc"></CardDescription>
         </CardHeader>
         <CardContent>
+          {loginMutation.isPending ? (
+            <div className="grid gap-4" aria-busy="true" aria-label="Signing in">
+              <div className="grid gap-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <div className="grid gap-2">
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-10 w-full" />
+              </div>
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="grid gap-4"
@@ -153,9 +167,10 @@ export default function LoginPage() {
               disabled={loginMutation.isPending}
               className="focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
-              {loginMutation.isPending ? "Signing in…" : "Sign in"}
+              Sign in
             </Button>
           </form>
+          )}
         </CardContent>
       </Card>
     </main>
